@@ -6,6 +6,10 @@ import { db } from 'prisma/db';
 import { APIError, RegisterKeys } from 'types';
 import { User } from '@prisma/client';
 
+export interface EmailSuccess {
+  ok: boolean;
+}
+
 const registerPayloadValidator = z.object({
   email: z.string().email({ message: 'Invalid Email. Please check again' }),
   password: z
@@ -14,14 +18,43 @@ const registerPayloadValidator = z.object({
     .max(24, { message: 'Password should be lower than 24 characters.' }),
 });
 
+const registerEmailPayloadValidator = z.object({
+  email: z.string().email({ message: 'Invalid Email. Please check again' }),
+});
+
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<APIError<typeof RegisterKeys> | Partial<User>>
+  res: NextApiResponse<
+    APIError<typeof RegisterKeys> | Partial<User> | EmailSuccess
+  >
 ) {
-  if (req.method !== 'POST') {
+  if (req.method !== 'POST' && req.method !== 'GET') {
     res
       .status(405)
-      .json({ fieldErrors: { form: 'Only POST requests allowed' } });
+      .json({ fieldErrors: { form: 'Only POST/GET requests allowed' } });
+    return;
+  }
+
+  // for verifying whether the email already exists
+  if (req.method === 'GET') {
+    try {
+      const emailPayload = validateRegisterEmailPayload(
+        req.query.email as string
+      );
+
+      await checkIfUserExists(emailPayload.email);
+
+      res.status(200).json({ ok: true });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        res.status(400).json(error.flatten());
+        return;
+      }
+      res
+        .status(400)
+        .json({ fieldErrors: { email: (error as Error).message } });
+    }
+
     return;
   }
 
@@ -60,4 +93,21 @@ export default async function handler(
 
 function validateRegisterPayload(req: NextApiRequest) {
   return registerPayloadValidator.parse(req.body);
+}
+
+function validateRegisterEmailPayload(email: string) {
+  return registerEmailPayloadValidator.parse({ email });
+}
+
+async function checkIfUserExists(email: string) {
+  const user = await db.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (user?.email) {
+    console.log('d');
+    throw new Error('User already exists');
+  }
 }
