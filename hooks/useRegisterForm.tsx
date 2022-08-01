@@ -11,12 +11,7 @@ type FormError = APIError<typeof RegisterKeys>;
 
 type SignUpSuccess = Partial<User>;
 
-interface useRegisterFormProps {
-  email?: string;
-  password?: string;
-}
-
-export function useRegisterForm({ email, password }: useRegisterFormProps) {
+export function useRegisterForm({ email, password }: SignUpSuccess) {
   const router = useRouter();
   const [error, setError] = React.useState<FormError>({ fieldErrors: {} });
 
