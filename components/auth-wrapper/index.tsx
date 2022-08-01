@@ -6,7 +6,7 @@ interface AuthWrapperProps {
 export default function AuthWrapper({ children }: AuthWrapperProps) {
   return (
     <div className="h-screen flex flex-col justify-between items-center md:bg-whitish px-7 relative">
-      <div className="flex flex-col flex-1 mb-5 max-w-xs md:max-w-sm items-center">
+      <div className="flex flex-col flex-1 mb-5 max-w-xs w-80 md:max-w-sm md:w-96 items-center">
         <header className="py-5 md:py-10">
           <h1 className="font-bold text-4xl tracking-wider text-jira-blue uppercase text-center">
             collasian

@@ -7,5 +7,5 @@ export async function checkIfUserExists(email: string) {
     },
   });
 
-  return { exists: !!user?.email };
+  return { exists: !!user?.email, user };
 }

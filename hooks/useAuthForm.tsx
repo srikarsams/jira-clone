@@ -1,6 +1,6 @@
 import React from 'react';
 import { User } from '@prisma/client';
-import { useRouter } from 'next/router';
+import { NextRouter, useRouter } from 'next/router';
 
 import { EmailStatus } from 'pages/api/auth/check-email';
 import { APIError, RegisterKeys } from 'types';
@@ -9,9 +9,17 @@ import { get, post } from 'utils/fetch';
 
 type FormError = APIError<typeof RegisterKeys>;
 
-type SignUpSuccess = Partial<User>;
+type AuthSuccess = Partial<User>;
 
-export function useRegisterForm({ email, password }: SignUpSuccess) {
+interface useAuthFormArgs extends AuthSuccess {
+  type?: 'login' | 'register';
+}
+
+export function useAuthForm({
+  email,
+  password,
+  type = 'register',
+}: useAuthFormArgs) {
   const router = useRouter();
   const [error, setError] = React.useState<FormError>({ fieldErrors: {} });
 
@@ -31,14 +39,31 @@ export function useRegisterForm({ email, password }: SignUpSuccess) {
 
         if ('exists' in emailValidationRes) {
           if (emailValidationRes.exists) {
-            setError({
-              fieldErrors: {
-                email: 'User already exists',
-              },
-            });
+            setError(
+              type === 'register'
+                ? {
+                    fieldErrors: {
+                      email: 'User already exists',
+                    },
+                  }
+                : { fieldErrors: {} }
+            );
+            if (type === 'login') {
+              router.push(`${router.pathname}?email=${email}`);
+            }
           } else {
-            router.push(`${router.pathname}?email=${email}`);
-            setError({ fieldErrors: {} });
+            if (type === 'register') {
+              router.push(`${router.pathname}?email=${email}`);
+            }
+            setError(
+              type === 'register'
+                ? { fieldErrors: {} }
+                : {
+                    fieldErrors: {
+                      email: 'User not found',
+                    },
+                  }
+            );
           }
         } else {
           setError(emailValidationRes as FormError);
@@ -48,13 +73,13 @@ export function useRegisterForm({ email, password }: SignUpSuccess) {
       }
     } else {
       try {
-        const signUpRes: SignUpSuccess | FormError = await post(
-          `/api/auth/register`,
+        const signUpRes: AuthSuccess | FormError = await post(
+          `/api/auth/${type}`,
           JSON.stringify({ email, password })
         );
 
         if ('email' in signUpRes) {
-          router.push('/login');
+          router.push(type === 'register' ? '/login' : '/');
         } else {
           setError(signUpRes as FormError);
         }

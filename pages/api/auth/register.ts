@@ -33,6 +33,7 @@ export default async function handler(
 
     if (exists) {
       res.status(400).send({ fieldErrors: { email: 'User already exists' } });
+      return;
     }
 
     registerPayload.password = hashSync(registerPayload.password, 12);

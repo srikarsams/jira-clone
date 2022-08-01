@@ -29,7 +29,7 @@ export default async function handler(
 
     const payload = await checkIfUserExists(emailPayload.email);
 
-    res.status(200).json(payload);
+    res.status(200).json({ exists: payload.exists });
   } catch (error) {
     if (error instanceof ZodError) {
       res.status(400).json(error.flatten());
