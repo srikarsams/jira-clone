@@ -2,8 +2,8 @@ import React from 'react';
 import { User } from '@prisma/client';
 import { useRouter } from 'next/router';
 
+import { EmailStatus } from 'pages/api/auth/check-email';
 import { APIError, RegisterKeys } from 'types';
-import { EmailSuccess } from 'pages/api/auth/register';
 
 import { get, post } from 'utils/fetch';
 
@@ -18,15 +18,28 @@ export function useRegisterForm({ email, password }: SignUpSuccess) {
   async function formHandler(e: React.FormEvent) {
     e.preventDefault();
 
+    /* 
+      this is to check whether email exists
+      if exists, throw an error
+      else ask for password 
+    */
     if (!router.query.email) {
       try {
-        const emailValidationRes: EmailSuccess | FormError = await get(
-          `/api/auth/register?email=${email}`
+        const emailValidationRes: EmailStatus | FormError = await get(
+          `/api/auth/check-email?email=${email}`
         );
 
-        if ((emailValidationRes as EmailSuccess)?.ok) {
-          router.push(`${router.pathname}?email=${email}`);
-          setError({ fieldErrors: {} });
+        if ('exists' in emailValidationRes) {
+          if (emailValidationRes.exists) {
+            setError({
+              fieldErrors: {
+                email: 'User already exists',
+              },
+            });
+          } else {
+            router.push(`${router.pathname}?email=${email}`);
+            setError({ fieldErrors: {} });
+          }
         } else {
           setError(emailValidationRes as FormError);
         }
@@ -40,7 +53,7 @@ export function useRegisterForm({ email, password }: SignUpSuccess) {
           JSON.stringify({ email, password })
         );
 
-        if ((signUpRes as SignUpSuccess)?.email) {
+        if ('email' in signUpRes) {
           router.push('/login');
         } else {
           setError(signUpRes as FormError);
