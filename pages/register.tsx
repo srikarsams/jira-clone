@@ -1,5 +1,6 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import classNames from 'classnames';
 
 import { Input } from 'components/input';
@@ -41,6 +42,13 @@ export default function RegisterPage() {
 
   return (
     <div className="h-screen flex flex-col justify-between items-center md:bg-whitish px-7 relative">
+      <Head>
+        <title>Sign up - Log in with Collasian account</title>
+        <meta
+          name="description"
+          content="Log in to Jira, Confluence, and all other Collasian Cloud products here. Not an Collasian user? Sign up for free."
+        />
+      </Head>
       <div className="flex flex-col flex-1 mb-5 max-w-xs md:max-w-sm items-center">
         <header className="py-5 md:py-10">
           <h1 className="font-bold text-4xl tracking-wider text-jira-blue uppercase text-center">
