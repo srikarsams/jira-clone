@@ -45,10 +45,7 @@ export default async function handler(
     }
 
     // Generates the token and sets the token in the res object
-    const token = jwt.sign(
-      { username: user.email },
-      process.env.JWT_SECRET || ''
-    );
+    const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET || '');
 
     res.setHeader(
       'Set-Cookie',
