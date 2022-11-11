@@ -1,4 +1,4 @@
-# Jira clone using NextJS and Prisma
+# Jira clone using NextJS and Prisma (WIP)
 
 Built using NextJS, Prisma, SQLite, TypeScript and TailwindCSS (In Progress)
 
